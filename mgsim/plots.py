@@ -102,11 +102,11 @@ def grid_heatmap(rows, path):
     plt.close(fig)
 
 
-def mc_bars(rows, path):
+def mc_bars(rows, path, key="outcome"):
     labels = [(a, c) for a in ALLOYS for c in COATINGS]
     fig, ax = plt.subplots(figsize=(10, 8.5))
     for i, (a, c) in enumerate(labels):
-        sub = [r["outcome"] for r in rows if r["alloy"] == a and r["coating"] == c]
+        sub = [r[key] for r in rows if r["alloy"] == a and r["coating"] == c]
         left = 0.0
         for o in OUTCOMES:
             w = sub.count(o) / len(sub)
@@ -123,7 +123,8 @@ def mc_bars(rows, path):
     ax.set_xlabel("probability across parameter uncertainty (%)")
     ax.xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
     ax.grid(axis="y", visible=False)
-    ax.set_title("Monte Carlo outcome probabilities (Latin hypercube, perfusion & tumour biology sampled)",
+    ax.set_title("Monte Carlo outcome probabilities (Latin hypercube, perfusion & tumour biology sampled)"
+                 + ("\ntumour/bone outcome only - H$_2$ and structural limits ignored" if key != "outcome" else ""),
                  loc="left")
     _legend_outcomes(fig, bbox_to_anchor=(0.5, 0.0))
     fig.tight_layout(rect=(0, 0.07, 1, 1))

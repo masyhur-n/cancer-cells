@@ -223,21 +223,24 @@ def simulate(p, record=False):
     bone_ok = bone_180 >= 0.8
     premature = (remaining_84 is not None and remaining_84 < 0.5) or gas_over_days >= 28.0
 
-    if premature:
-        outcome = "Premature degradation"
-    elif recur_day is not None and recur_day <= 180.0:
-        outcome = "Early recurrence"
+    # tumour/bone outcome regardless of gas or structural failure
+    if recur_day is not None and recur_day <= 180.0:
+        biology = "Early recurrence"
     elif recur_day is not None:
-        outcome = "Late recurrence"
+        biology = "Late recurrence"
     elif not bone_ok:
-        outcome = "Control, bone impaired"
+        biology = "Control, bone impaired"
     elif eradicated:
-        outcome = "Dual success"
+        biology = "Dual success"
     else:
-        outcome = "Dormant control"
+        biology = "Dormant control"
+    outcome = "Premature degradation" if premature else biology
 
     out = dict(
         outcome=outcome,
+        biology_outcome=biology,
+        gas_failure=bool(gas_over_days >= 28.0),
+        structural_failure=bool(remaining_84 is not None and remaining_84 < 0.5),
         bone_ok=bool(bone_ok),
         eradicated=bool(eradicated),
         recurrence_day=recur_day if recur_day is not None else np.nan,
