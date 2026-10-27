@@ -109,7 +109,106 @@ print(r["outcome"], r["peak_interface_pH"], r["bone_score_180"])
 
 ## Results
 
-<!-- RESULTS -->
+Full tables: [`results/summary.md`](results/summary.md). Numbers are from
+`python run_all.py` (2,400 grid scenarios + 6,000 Monte Carlo runs + a
+28 × 28 × 2 window sweep).
+
+| Figure | Shows |
+|---|---|
+| ![](figures/fig1_time_courses.png) | **Fig 1.** The same WE43 porous implant with each coating (low perfusion, confined margin). Bare and HA-only kill the tumour, but bone falls to 0.4–0.5× Ti. PEO+HA reaches pH ~8.2, eradicates the tumour slowly, and keeps bone above 0.9×. The sealed PEO+HA coating keeps pH near 7.4 and the tumour regrows. |
+| ![](figures/fig2_scenario_grid.png) | **Fig 2.** Outcome of every grid scenario (R1 residual) |
+| ![](figures/fig3_monte_carlo_outcomes.png) | **Fig 3.** Monte Carlo outcome probabilities, with the gas/structural limit applied |
+| ![](figures/fig3b_monte_carlo_tumour_bone.png) | **Fig 3b.** Tumour/bone outcome only (H₂ limit ignored) |
+| ![](figures/fig4_therapeutic_window.png) | **Fig 4.** Therapeutic window: effective corrosion rate vs perfusion |
+| ![](figures/fig5_sensitivity.png) | **Fig 5.** Spearman sensitivity of tumour control and bone score |
+
+### What the simulations say (hypotheses to test, not conclusions)
+
+1. **The local environment matters more than the choice of alloy or coating.**
+   Perfusion clearance is the strongest driver of tumour control
+   (Spearman ρ = +0.60 against residual tumour). Next come tumour doubling
+   time (−0.41) and whether the margin is confined (−0.26). Alloy rate
+   (−0.21) and coating barrier (−0.13 to −0.15) come after those.
+   Across the grid, with gas ignored, *dual success* occurred only in
+   **confined margins with low or very-low perfusion**: 12% of
+   confined/low-perfusion scenarios, and 0% of open or normally perfused ones.
+
+2. **In vivo dilution can explain why in vitro antitumour effects may not
+   carry over.** In an open, perfused margin the peak interface pH never
+   exceeded **8.0**, and Mg²⁺ stayed at 1.5–30 mM, even for bare ZK60. That
+   is well below the alkalinity that killed U2-OS and MG-63 cells in extract
+   studies [Zhang2012, Li2014]. The same implants in a confined, poorly
+   perfused bed reached pH **8.5–10.4** and 23–67 mM Mg²⁺. The in vitro / in
+   vivo gap [Kirkland2012] therefore applies to the antitumour claim as well
+   as to the corrosion rate.
+
+3. **There is a narrow therapeutic window at peak interface pH ≈ 8.4–9.0
+   (Fig 4).** Below it the tumour grows back (early or late recurrence).
+   Above it the tumour is controlled but bone formation drops (outcome C).
+   This band overlaps both the osteoblast optimum near pH 8.4 [Galow2017]
+   and the cytostatic/dormancy range [Globig2022]. That overlap is why a
+   dual-function implant is plausible at all. The window is a diagonal band:
+   the required corrosion rate scales roughly with perfusion. So **no single
+   corrosion rate is right for every patient.**
+
+4. **Each coating moves the outcome mix in a different direction (Fig 3b).**
+   - *Bare / HA-only* (fast): most tumour control, but the most bone
+     impairment (C = 18–37%) and the most H₂ breaches (52–80%).
+   - *PEO / PEO+HA* (intermediate): the most balanced. PEO+HA also caps the
+     interface pH at 8.5–9.2 while the HA layer lasts [Lamaka2018], which
+     happens to cut off the bone-toxic overshoot while leaving the cytostatic
+     range intact. This is the main mechanistic argument for PEO+HA.
+   - *PEO+HA-sealed* (slow): the best bone and gas profile, but 84–91% early
+     recurrence. Too much protection removes the antitumour effect.
+
+5. **H₂ gas is probably the binding constraint.** Using a Song2007-anchored
+   tolerance, 27–80% of Monte Carlo runs per alloy/coating breach the gas
+   limit. In the grid, 84% of porous (3× area) scaffolds do. Porosity raises
+   cytotoxicity [Hakimi2016], and it raises gas just as much. Every
+   *Premature degradation* call in the grid was caused by gas; none was
+   structural.
+
+6. **Dormancy and late recurrence are real possibilities.** Between 5% and
+   13% of runs per alloy/coating end in suppression without eradication
+   (outcome B) or regrowth after day 180 (outcome D). Once the coating breaks
+   down and the alkaline flux settles, the suppressed cells can resume
+   growth, in line with the dormancy phenotype reported by [Globig2022].
+   Preclinical follow-up therefore needs to run beyond implant resorption.
+
+7. **Tumour biology changes the boundaries more than it changes the
+   ranking.** pH-resistant and Mg-stimulated phenotypes
+   [WolfTrapani2008, CastiglioniMaier2011] move several *dual success*
+   scenarios into dormant control or late recurrence (Fig 2), but the
+   ranking of coatings stays the same.
+
+8. **Overall, Mg degradation alone controls a macroscopic R1 residual in
+   only a minority of plausible conditions.** The most probable single
+   outcome across the uncertainty is early recurrence. The model therefore
+   supports using degradation as an *adjunct*, with a tuned PEO+HA barrier
+   plus drug loading or adjuvant therapy, which is the direction recent
+   designs take [Review2024].
+
+### Measurements that would collapse the uncertainty
+
+These are ranked by sensitivity. Each one replaces a sampled range with data.
+
+1. **Local clearance and pH in the resection bed in vivo**, for example with
+   implanted pH/Mg²⁺ microsensors or [Lamaka2018]-style micro-probes in an
+   animal resection model, compared between irradiated and non-irradiated
+   beds. This fixes `k_clear` and `confined`.
+2. **Dose–response of osteosarcoma cells to pH and to Mg²⁺ separately**, in
+   bicarbonate-buffered (not HEPES-only) media under 5% CO₂, measuring both
+   cytostasis (Ki-67) and death. This fixes `pH50_static`, `pH50_kill` and
+   `IC50_mg`.
+3. **The same dose–response for primary osteoblasts / BMSCs**
+   [Burmester2014 shows cell lines mislead]. This fixes `ph_opt`, `ph_tox50`
+   and `mg_tox_IC50`.
+4. **Coating kinetics in vivo**: H₂ and Mg release over time for PEO and
+   PEO+HA on the target alloy, giving `m0`, `t_break` and `m_late`.
+
+Each of these can be dropped into `mgsim/parameters.py` as a narrower
+`Range`. Re-running `run_all.py` then updates every outcome probability.
+
 
 ---
 
